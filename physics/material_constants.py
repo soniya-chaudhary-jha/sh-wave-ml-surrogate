@@ -1,8 +1,9 @@
-"""
-Material constants and properties for surface wave simulations.
-"""
+# Material constants from paper
 
-MATERIALS = {
-    "steel": {"density": 7850, "shear_modulus": 81e9},
-    "aluminum": {"density": 2700, "shear_modulus": 26e9},
-}
+C66 = 3.99e10
+C44 = 5.82e10
+
+C44_ve = 6.34e10
+
+rho1 = 4500
+rho2 = 3364

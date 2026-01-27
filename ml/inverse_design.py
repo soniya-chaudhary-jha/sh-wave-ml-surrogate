@@ -1,7 +1,4 @@
-"""
-Inverse design using the surrogate model.
-"""
+# Placeholder for inverse mapping (advanced step)
+# (c, k) -> (H, alpha, eta)
 
-def inverse_design():
-    """Perform inverse design optimization."""
-    pass
+print("Inverse design module — to be implemented.")
