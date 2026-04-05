@@ -28,8 +28,4 @@ env/
 .vscode/
 .idea/
 .DS_Store
-*.csv
-*.pkl
 *.h5
-data/raw/*
-data/processed/*
