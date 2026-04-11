@@ -1,43 +1,60 @@
-import sys
-import os
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
 import numpy as np
 import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
-from physics.parameter_sampler import sample_parameters
-from physics.dispersion_solver import solve_phase_velocity
 from ml.models import get_gbr
-import pickle
+from joblib import dump
+import os
 
-# Generate data
-X = sample_parameters(n_samples=6000)
 
-y = np.array([
-    solve_phase_velocity(k, H, a, e) 
-    for k, H, a, e in X
-])
+def find_data_path(root):
+    candidates = [
+        os.path.join(root, "data", "dispersion_vs_L.xlsx"),
+        os.path.join(root, "data", "raw", "dispersion_vs_L.xlsx"),
+        os.path.join(root, "data", "dispersion_vs_L.csv"),
+        os.path.join(root, "data", "raw", "dispersion_vs_L.csv"),
+    ]
+    return next((p for p in candidates if os.path.exists(p)), None)
 
-mask = ~np.isnan(y)
-X, y = X[mask], y[mask]
 
-# Scale
+ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+data_path = find_data_path(ROOT)
+if data_path is None:
+    raise FileNotFoundError("Could not find dispersion_vs_L data file in data/ or data/raw/")
+
+# Load
+if data_path.endswith('.csv'):
+    data = pd.read_csv(data_path)
+else:
+    data = pd.read_excel(data_path)
+
+# Inputs: (kL, L)
+X = data[["kL", "L"]].values
+
+# Output: c / beta_l
+y = data["c_beta"].values
+
+# Scaling
 scaler = StandardScaler()
 X_scaled = scaler.fit_transform(X)
 
-# Split
+# Train-test split
 X_train, X_test, y_train, y_test = train_test_split(
     X_scaled, y, test_size=0.2, random_state=42
 )
 
-# Train
+# Train model
 model = get_gbr()
 model.fit(X_train, y_train)
 
-# Save
-pd.DataFrame(X).to_csv("data/raw/analytical_results.csv", index=False)
-with open("data/raw/model.pkl", "wb") as f:
-    pickle.dump(model, f)
+# Save model + scaler
+model_dir = os.path.join(ROOT, "data", "models")
+os.makedirs(model_dir, exist_ok=True)
 
-print("Training completed.")
+model_path = os.path.join(model_dir, "gbr_model.pkl")
+scaler_path = os.path.join(model_dir, "scaler.pkl")
+
+dump(model, model_path)
+dump(scaler, scaler_path)
+
+print("Training completed successfully.")
