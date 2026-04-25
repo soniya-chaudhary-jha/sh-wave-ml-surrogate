@@ -40,14 +40,14 @@ if __name__ == "__main__":
 
     # Find data file
     possible = [
-        os.path.join("data", "dispersion_vs_L.xlsx"),
-        os.path.join("data", "raw", "dispersion_vs_L.xlsx"),
-        os.path.join("data", "dispersion_vs_L.csv"),
-        os.path.join("data", "raw", "dispersion_vs_L.csv"),
+        os.path.join("data", "dispersion_full_dataset.xlsx"),
+        os.path.join("data", "raw", "dispersion_full_dataset.xlsx"),
+        os.path.join("data", "dispersion_full_dataset.csv"),
+        os.path.join("data", "raw", "dispersion_full_dataset.csv"),
     ]
     data_path = next((p for p in possible if os.path.exists(p)), None)
     if data_path is None:
-        print("dispersion_vs_L data file not found in data/ or data/raw/")
+        print("dispersion_full_dataset data file not found in data/ or data/raw/")
         exit(1)
 
     if data_path.endswith('.csv'):
@@ -56,7 +56,7 @@ if __name__ == "__main__":
         data = pd.read_excel(data_path)
 
     # Inputs: kL and L
-    X = data[["kL", "L"]].values
+    X = data[["kL", "L", "alpha1", "s", "P1", "P2"]].values
 
     # Output: c/beta_l
     y = data["c_beta"].values

@@ -9,10 +9,10 @@ import os
 
 def find_data_path(root):
     candidates = [
-        os.path.join(root, "data", "dispersion_vs_L.xlsx"),
-        os.path.join(root, "data", "raw", "dispersion_vs_L.xlsx"),
-        os.path.join(root, "data", "dispersion_vs_L.csv"),
-        os.path.join(root, "data", "raw", "dispersion_vs_L.csv"),
+        os.path.join(root, "data", "dispersion_full_dataset.xlsx"),
+        os.path.join(root, "data", "raw", "dispersion_full_dataset.xlsx"),
+        os.path.join(root, "data", "dispersion_full_dataset.csv"),
+        os.path.join(root, "data", "raw", "dispersion_full_dataset.csv"),
     ]
     return next((p for p in candidates if os.path.exists(p)), None)
 
@@ -20,7 +20,7 @@ def find_data_path(root):
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 data_path = find_data_path(ROOT)
 if data_path is None:
-    raise FileNotFoundError("Could not find dispersion_vs_L data file in data/ or data/raw/")
+    raise FileNotFoundError("Could not find dispersion_full_dataset data file in data/ or data/raw/")
 
 # Load
 if data_path.endswith('.csv'):
@@ -29,19 +29,24 @@ else:
     data = pd.read_excel(data_path)
 
 # Inputs: (kL, L)
-X = data[["kL", "L"]].values
+X = data[["kL", "L", "alpha1", "s", "P1", "P2"]].values
 
 # Output: c / beta_l
 y = data["c_beta"].values
 
-# Scaling
-scaler = StandardScaler()
-X_scaled = scaler.fit_transform(X)
-
-# Train-test split
+# -----------------------------
+# STEP 1: Train-test split FIRST
+# -----------------------------
 X_train, X_test, y_train, y_test = train_test_split(
-    X_scaled, y, test_size=0.2, random_state=42
+    X, y, test_size=0.2, random_state=42
 )
+
+# -----------------------------
+# STEP 2: Scaling AFTER split
+# -----------------------------
+scaler = StandardScaler()
+X_train = scaler.fit_transform(X_train)
+X_test  = scaler.transform(X_test)
 
 # Train model
 model = get_gbr()
